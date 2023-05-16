@@ -1,0 +1,129 @@
+create database HR_Managenet_System;
+use HR_Managenet_System;
+CREATE TABLE departments (
+  department_id INT PRIMARY KEY,
+  department_name VARCHAR(50)
+);
+
+CREATE TABLE job_titles (
+  job_id INT PRIMARY KEY,
+  job_title VARCHAR(50)
+);
+
+CREATE TABLE salaries (
+  salary_id INT PRIMARY KEY,
+  min_salary DECIMAL(10,2),
+  max_salary DECIMAL(10,2)
+);
+
+CREATE TABLE employees (
+  employee_id INT PRIMARY KEY,
+  first_name VARCHAR(50),
+  last_name VARCHAR(50),
+  email VARCHAR(50),
+  phone_number VARCHAR(20),
+  hire_date DATE,
+  job_id INT,
+  department_id INT,
+  salary_id INT,
+  FOREIGN KEY (job_id) REFERENCES job_titles(job_id),
+  FOREIGN KEY (department_id) REFERENCES departments(department_id),
+  FOREIGN KEY (salary_id) REFERENCES salaries(salary_id)
+);
+
+CREATE TABLE job_history (
+  employee_id INT,
+  start_date DATE,
+  end_date DATE,
+  job_id INT,
+  department_id INT,
+  FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
+  FOREIGN KEY (job_id) REFERENCES job_titles(job_id),
+  FOREIGN KEY (department_id) REFERENCES departments(department_id)
+);
+
+CREATE TABLE performance_reviews (
+  review_id INT PRIMARY KEY,
+  employee_id INT,
+  review_date DATE,
+  review_text VARCHAR(1000),
+  FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+);
+
+INSERT INTO departments (department_id, department_name) VALUES
+(1, 'Sales'),
+(2, 'Marketing'),
+(3, 'Engineering');
+
+INSERT INTO job_titles (job_id, job_title) VALUES
+(1, 'Sales Representative'),
+(2, 'Marketing Manager'),
+(3, 'Software Engineer');
+
+INSERT INTO salaries (salary_id, min_salary, max_salary) VALUES
+(1, 40000.00, 60000.00),
+(2, 50000.00, 70000.00),
+(3, 60000.00, 80000.00);
+
+INSERT INTO employees (employee_id, first_name, last_name, email, phone_number, hire_date, job_id, department_id, salary_id) VALUES
+(1, 'John', 'Doe', 'johndoe@example.com', '555-1234', '2020-01-01', 1, 1, 1),
+(2, 'Jane', 'Smith', 'janesmith@example.com', '555-2345', '2019-05-01', 2, 2, 2),
+(3, 'Bob', 'Johnson', 'bobjohnson@example.com', '555-3456', '2018-02-01', 3, 3, 3),
+(4, 'Sarah', 'Lee', 'sarahlee@example.com', '555-4567', '2017-09-01', 1, 1, 1),
+(5, 'David', 'Kim', 'davidkim@example.com', '555-5678', '2016-11-01', 2, 2, 2),
+(6, 'Mary', 'Park', 'marypark@example.com', '555-6789', '2015-04-01', 3, 3, 3),
+(7, 'Tom', 'Chen', 'tomchen@example.com', '555-7890', '2014-01-01', 1, 1, 1),
+(8, 'Amy', 'Wang', 'amywang@example.com', '555-8901', '2013-06-01', 2,2,2);
+
+########################## Display Results  ########################################
+# To display all the job titles 
+SELECT DISTINCT job_title FROM jobs; *****
+
+# What are the names of all the departments in the HR_Management_System database?
+SELECT department_name FROM departments;
+
+#Select all employees hired in the year 2022:
+SELECT *
+FROM employees
+WHERE YEAR(hire_date) = 2022;
+
+
+# What are the job titles and their corresponding minimum and maximum salaries?
+SELECT job_title, min_salary, max_salary FROM job_titles
+JOIN salaries ON job_titles.job_id = salaries.salary_id;
+
+# Which employees have a salary between $50,000 and $70,000?
+SELECT first_name, last_name FROM employees
+JOIN salaries ON employees.salary_id = salaries.salary_id
+WHERE min_salary >= 50000 AND max_salary <= 70000;
+
+#Display the job history of employee with ID 3:
+SELECT * FROM job_history WHERE employee_id = 3;
+
+#Display the performance review of employee with ID 2:
+SELECT * FROM performance_reviews WHERE employee_id = 2;
+
+# Display the department name and job title of employee with ID 1:
+SELECT departments.department_name, job_titles.job_title FROM employees JOIN departments ON employees.department_id = departments.department_id JOIN job_titles ON employees.job_id = job_titles.job_id WHERE employees.employee_id = 1;
+
+#Select the average salary for each department:
+SELECT departments.department_name, AVG(salaries.min_salary + salaries.max_salary)/2 AS average_salary
+FROM employees
+INNER JOIN departments ON employees.department_id = departments.department_id
+INNER JOIN salaries ON employees.salary_id = salaries.salary_id
+GROUP BY departments.department_name;
+
+#Select the top 5 highest paid employees:
+SELECT first_name, last_name, (min_salary + max_salary)/2 AS avg_salary
+FROM employees
+INNER JOIN salaries ON employees.salary_id = salaries.salary_id
+ORDER BY avg_salary DESC
+LIMIT 5;
+
+#Select the department with the most employees:
+SELECT departments.department_name, COUNT(*) AS num_employees
+FROM employees
+INNER JOIN departments ON employees.department_id = departments.department_id
+GROUP BY departments.department_name
+ORDER BY num_employees DESC
+LIMIT 1;
